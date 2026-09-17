@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Birthday! ❤️</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Antique&family=Sacramento&display=swap" rel="stylesheet">
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #111;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Shippori Antique', sans-serif;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    /* Background Efek Hujan Warna */
+    .bg-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .ribbon {
+      position: absolute;
+      width: 8px;
+      height: 25px;
+      opacity: 0.8;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-30px) rotate(0deg); }
+      100% { transform: translateY(105vh) rotate(360deg); }
+    }
+
+    /* Container Utama */
+    .container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    /* Tombol Mulai & Simpan */
+    .btn-start, .btn-save {
+      background: #ff4d6d;
+      color: #fff;
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 77, 109, 0.5);
+      transition: transform 0.3s ease, background 0.3s ease;
+      font-weight: bold;
+    }
+
+    .btn-start:hover, .btn-save:hover {
+      transform: scale(1.08);
+      background: #c9184a;
+    }
+
+    /* Kotak Pesan Transisi Lambat */
+    .dialog-box {
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      padding: 30px 25px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      
+      /* TRANSISI LAMBAT (1.5 detik) */
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+      display: none;
+    }
+
+    .dialog-box.show {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .dialog-box h2 {
+      font-size: 1.4rem;
+      color: #ff4d6d;
+      margin-bottom: 12px;
+    }
+
+    .dialog-box p {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border: 2px solid #ff758c;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      text-align: center;
+    }
+
+    /* Foto di Dalam Kotak Transisi */
+    .preview-photo {
+      width: 100%;
+      max-height: 220px;
+      border-radius: 15px;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+
+    /* Tampilan Surat Akhir */
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .card img {
+      width: 100%;
+      max-height: 220px;
+      border-radius: 15px;
+      object-fit: cover;
+      margin-bottom: 20px;
+    }
+
+    .message {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #444;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .btn-replay {
+      margin-top: 20px;
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Musik Latar (Lokal) -->
+  <audio id="bgm" loop>
+    <source src="lagu.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Background Hujan Warna -->
+  <div class="bg-pattern" id="bgPattern"></div>
+
+  <div class="container">
+    
+    <!-- 1. Tombol Buka Kejutan -->
+    <div id="startSection">
+      <button class="btn-start" onclick="startJourney()">
+        <i class="fa-solid fa-gift"></i> Buka Kejutan
+      </button>
+    </div>
+
+    <!-- Kotak Transisi Pesan (Tanpa Tombol Lanjut) -->
+    <div class="dialog-box" id="dialogBox">
+      <h2 id="dialogTitle">Judul</h2>
+      <p id="dialogText">Pesan akan muncul di sini...</p>
+      
+      <!-- Input Nama (Hanya Muncul di Awal) -->
+      <div id="inputContainer" style="display: none;">
+        <input type="text" id="nameInput" placeholder="Ketik nama kamu...">
+        <button class="btn-save" onclick="saveName()">Lanjut ➡️</button>
+      </div>
+
+      <!-- Wadah Foto (Muncul Otomatis) -->
+      <div id="photoContainer" style="display: none;">
+        <img src="foto.jpg" alt="Foto Ucapan" class="preview-photo">
+      </div>
+    </div>
+
+    <!-- Tampilan Akhir (Foto di Atas Ucapan Selamat) -->
+    <div class="dialog-box" id="finalCard">
+      <h1 style="font-family: 'Sacramento', cursive; font-size: 2.8rem; color: #ff758c; margin-bottom: 10px;">Happy Birthday! 🎉</h1>
+
+      <div class="card">
+        <img src="foto.jpg" alt="Foto Ulang Tahun">
+
+        <div class="message">
+          <p><strong>Halo <span id="userName">Kamu</span>! ✨</strong></p><br>
+          <p>Selamat ulang tahun yaaa! Semoga di usiamu yang baru ini kamu selalu diberikan kesehatan, kebahagiaan yang melimpah, dan semua impianmu bisa terwujud satu per satu.</p><br>
+          <p>Makasih udah selalu jadi sosok yang baik dan menyenangkan. Enjoy your special day! 🥳💖</p>
+        </div>
+
+        <button class="btn-replay" onclick="location.reload()">
+          <i class="fa-solid fa-rotate-right"></i> Putar Lagi
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Efek Hujan Warna
+    const colors = ['#ff4d6d', '#ff758c', '#ffb3c1', '#ffe6e8', '#ffd166', '#06d6a0'];
+    const bgPattern = document.getElementById('bgPattern');
+
+    for (let i = 0; i < 40; i++) {
+      const ribbon = document.createElement('div');
+      ribbon.classList.add('ribbon');
+      ribbon.style.left = Math.random() * 100 + 'vw';
+      ribbon.style.animationDuration = Math.random() * 3 + 2 + 's';
+      ribbon.style.animationDelay = Math.random() * 2 + 's';
+      ribbon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      bgPattern.appendChild(ribbon);
+    }
+
+    let userName = 'Kamu';
+    const dialogBox = document.getElementById('dialogBox');
+
+    // Fungsi Transisi Lambat (Fade Out -> Ganti Teks -> Fade In)
+    function changeContent(title, text, showInput = false, showPhoto = false) {
+      return new Promise((resolve) => {
+        // 1. Fade Out (Memudar 1.5 detik)
+        dialogBox.style.opacity = '0';
+        dialogBox.style.transform = 'translateY(20px)';
+
+        setTimeout(() => {
+          // 2. Ganti Konten
+          document.getElementById('dialogTitle').innerText = title;
+          document.getElementById('dialogText').innerText = text;
+          document.getElementById('inputContainer').style.display = showInput ? 'block' : 'none';
+          document.getElementById('photoContainer').style.display = showPhoto ? 'block' : 'none';
+
+          // 3. Fade In (Muncul 1.5 detik)
+          dialogBox.style.opacity = '1';
+          dialogBox.style.transform = 'translateY(0)';
+
+          setTimeout(() => {
+            resolve();
+          }, 1500);
+        }, 1500);
+      });
+    }
+
+    // Fungsi Timer Penundaan (Delay)
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Mulai Musik & Tampilkan Input Nama
+    function startJourney() {
+      document.getElementById('bgm').play();
+      document.getElementById('startSection').style.display = 'none';
+
+      dialogBox.classList.add('show');
+      setTimeout(() => {
+        dialogBox.style.opacity = '1';
+        dialogBox.style.transform = 'translateY(0)';
+      }, 100);
+
+      document.getElementById('dialogTitle').innerText = 'Siapa Nama Kamu?';
+      document.getElementById('dialogText').innerText = 'Ketik nama kamu di bawah ini yaa...';
+      document.getElementById('inputContainer').style.display = 'block';
+    }
+
+    // Setelah Nama Diisi -> Jalankan Alur Otomatis
+    async function saveName() {
+      const inputVal = document.getElementById('nameInput').value.trim();
+      if (inputVal !== "") userName = inputVal;
+      document.getElementById('userName').innerText = userName;
+
+      // 1. Pesan Pertama
+      await changeContent(`Halo ${userName}! 👋`, 'Hari ini ada yang ulang tahun ya?');
+      await wait(3000); // Tampil selama 3 detik
+
+      // 2. Pesan Kedua
+      await changeContent('Ciee yang Makin Tua! 😜', 'Tambah umur berarti harus makin dewasa dan makin bahagia yaa!');
+      await wait(3000);
+
+      // 3. Pesan Ketiga
+      await changeContent('Semoga Panjang Umur! ✨', 'Semoga semua hal-hal baik selalu menyertai setiap langkah kamu.');
+      await wait(3000);
+
+      // 4. Pesan Keempat
+      await changeContent('Ada Kejutan Foto! 📸', 'Coba tebak foto siapa yang ada di balik ini?');
+      await wait(3000);
+
+      // 5. Tampilan Foto
+      await changeContent('Tadaa! ✨', 'Cantik/Ganteng banget kan orangnya! 😄', false, true);
+      await wait(4000); // Tampil foto selama 4 detik
+
+      // 6. Tampilkan Surat Akhir Ucapan Selamat
+      dialogBox.style.opacity = '0';
+      dialogBox.style.transform = 'translateY(20px)';
+
+      setTimeout(() => {
+        dialogBox.style.display = 'none';
+        const finalCard = document.getElementById('finalCard');
+        finalCard.classList.add('show');
+        setTimeout(() => {
+          finalCard.style.opacity = '1';
+          finalCard.style.transform = 'translateY(0)';
+        }, 100);
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
